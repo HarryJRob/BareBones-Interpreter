@@ -3,7 +3,7 @@ module HappyParser where
 import Lexer
 }
 
-%name praseCalc
+%name parseCalc
 %tokentype { Token }
 %error { parseError }
 
@@ -26,23 +26,31 @@ import Lexer
 
 %%
 
-Exp : while Variable not Number do Exp end    { WhileLoop $2 $4 $6 }
-    | copy Variable to Variable               { CopyVar $2 $4 }
-    | init Variable '=' Number                { InitVar $2 $4 }
-    | incr Variable                           { IncrVar $2 }
-    | decr Variable                           { DecrVar $2 }
-    | clear Variable                          { ClearVar $2 }
+ExpList : Exp ExpList                             { ExpList $1 $2 }
+        | Exp                                     { Exp $1 }
 
-Number : int                          { Int $1 }
+Exp : while Variable not Number do ExpList end    { WhileLoop $2 $4 $6 }
+    | copy Variable to Variable                   { CopyVar $2 $4 }
+    | init Variable '=' Number                    { InitVar $2 $4 }
+    | incr Variable                               { IncrVar $2 }
+    | decr Variable                               { DecrVar $2 }
+    | clear Variable                              { ClearVar $2 }
 
-Variable : var                        { Var $1 }
+Number : int                                      { Int $1 }
+
+Variable : var                                    { Var $1 }
 
 {
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
 
+data ExpList
+    = ExpList Exp ExpList
+    | Exp Exp
+    deriving Show
+
 data Exp
-      = WhileLoop Variable Number Exp
+      = WhileLoop Variable Number ExpList
       | CopyVar Variable Variable
       | InitVar Variable Number
       | IncrVar Variable

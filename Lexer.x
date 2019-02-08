@@ -37,6 +37,7 @@ data Token
   | TokenTo
   | TokenWhile
   | TokenEq
+  | TokenNewLine
   | TokenVar String
   | TokenInt Int
   deriving (Eq, Show)
